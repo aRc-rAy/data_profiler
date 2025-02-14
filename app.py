@@ -78,7 +78,7 @@ def download_report():
     """Download the generated report"""
     report_path = os.path.join(app.config["UPLOAD_FOLDER"], "report.html")
     if os.path.exists(report_path):
-        return redirect(report_path)
+        return send_file(report_path, as_attachment=True)
     flash("⚠️ No report available. Please upload a file first.", "warning")
     return redirect(url_for("upload_file"))
 
