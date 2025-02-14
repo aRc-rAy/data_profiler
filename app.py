@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash ,after_this_request,send_from_directory
 import pandas as pd
 from ydata_profiling import ProfileReport
 
@@ -69,18 +69,27 @@ def upload_file():
 
         # ✅ Flash success message
         flash("✅ Report generated successfully! Click 'Download Report' to get it.", "success")
-        return redirect(url_for("download_report"))
+        return redirect(url_for("upload_file"))
 
     return render_template("index.html")
 
 @app.route("/download")
 def download_report():
-    """Download the generated report"""
-    report_path = os.path.join(app.config["UPLOAD_FOLDER"], "report.html")
-    if os.path.exists(report_path):
-        return send_file(report_path, as_attachment=True)
-    flash("⚠️ No report available. Please upload a file first.", "warning")
-    return redirect(url_for("upload_file"))
+    """Download the generated report and redirect back to the upload page"""
+    report_dir = app.config["UPLOAD_FOLDER"]
+    report_filename = "report.html"
+
+    if not os.path.exists(os.path.join(report_dir, report_filename)):
+        flash("⚠️ No report available. Please upload a file first.", "warning")
+        return redirect(url_for("upload_file"))
+
+    @after_this_request
+    def redirect_to_upload(response):
+        """Redirect to upload page after sending file"""
+        response.headers["Refresh"] = "2; url=" + url_for("upload_file")
+        return response
+
+    return send_from_directory(report_dir, report_filename, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
