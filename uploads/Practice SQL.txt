@@ -1,0 +1,56 @@
+Practice SQL
+
+-- create database SchoolDB;
+
+-- use SchoolDB;
+
+create table students(
+StudentID int primary key,
+FirstName varchar(255),
+MiddleName varchar(255) default(null),
+LastName varchar(255),
+BirthDate date,
+Class varchar(50),
+EnrollmentDate date
+);
+
+insert into students values
+(1,"Dilip","Kumar","Yadav",Date '2002-12-31',12,"2019-07-01"),
+(2,"Harshal","Baban","Kotti",Date '2002-11-30',12,"2019-07-01"),
+(5,"Yash","Kumar",null,Date '2002-10-31',13,"2018-07-01"),
+(4,"Nitish","Kumar","Reddy",Date '2002-09-30',12,"2017-07-01"),
+(3,"Kailash",null,"Parihar",Date '2002-08-31',12,"2020-07-01");
+
+update students
+set Class=10
+where StudentID=3;
+
+delete from students
+where StudentID=4;
+
+
+select * from students;
+
+select * from students
+where EnrollmentDate> "2018-06-01";
+
+select * from students
+where Class=12;
+
+alter table students
+add column Email varchar(255) default("xxx@gmail.com");
+
+alter table students
+modify column LastName varchar(300);
+
+alter table students
+rename column MiddleName to Middle;
+
+alter table students
+rename to Students;
+
+select * from Students;
+
+
+
+

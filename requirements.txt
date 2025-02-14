@@ -1,0 +1,5 @@
+flask
+pandas
+ydata_profiling
+openpyxl
+gunicorn
