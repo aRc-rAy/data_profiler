@@ -14,6 +14,9 @@ if not os.path.exists(app.config["UPLOAD_FOLDER"]):
 # Allowed extensions
 ALLOWED_EXTENSIONS = {"csv", "xls", "xlsx"}
 
+# File size threshold (100 MB)
+FILE_SIZE_THRESHOLD = 100 * 1024 * 1024
+
 def allowed_file(filename):
     """Check if file extension is allowed"""
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -62,9 +65,20 @@ def upload_file():
             flash("❌ Could not read file. Please upload a valid CSV or Excel file.", "danger")
             return redirect(request.url)
 
-        # ✅ Generate profiling report
-        report_path = os.path.join(app.config["UPLOAD_FOLDER"], "report.html")
-        profile = ProfileReport(df, explorative=True)
+        # ✅ Check file size and determine report parameters
+        file_size = os.path.getsize(file_path)
+        if file_size < FILE_SIZE_THRESHOLD:
+            explorative = True
+            minimal = False
+        else:
+            explorative = False
+            minimal = True
+
+        # ✅ Generate profiling report with dynamic filename
+        file_name_without_ext = file.filename.rsplit(".", 1)[0]
+        report_filename = f"{file_name_without_ext}_report.html"
+        report_path = os.path.join(app.config["UPLOAD_FOLDER"], report_filename)
+        profile = ProfileReport(df, explorative=explorative, minimal=minimal)
         profile.to_file(report_path)
 
         # ✅ Flash success message
@@ -77,7 +91,14 @@ def upload_file():
 def download_report():
     """Download the generated report and redirect back to the upload page"""
     report_dir = app.config["UPLOAD_FOLDER"]
-    report_filename = "report.html"
+
+    # Find the HTML report file
+    html_files = [f for f in os.listdir(report_dir) if f.endswith(".html")]
+    if not html_files:
+        flash("⚠️ No report available. Please upload a file first.", "warning")
+        return redirect(url_for("upload_file"))
+    
+    report_filename = html_files[0]  # Get the first HTML file
 
     if not os.path.exists(os.path.join(report_dir, report_filename)):
         flash("⚠️ No report available. Please upload a file first.", "warning")
